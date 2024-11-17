@@ -31,10 +31,11 @@ def preprocess_course_data(year, term):
     # Create a hash map for indices
     index_status_map = {}
     for course in courses_data:
+        courseName = course.get("title")
         for section in course.get("sections", []):
             idx = section.get("index")
             open_status = section.get("openStatusText")
-            index_status_map[idx] = open_status
+            index_status_map[idx] = {"status": open_status, "title": courseName}
 
     logging.info(f"Course data preprocessed. Total indices: {len(index_status_map)}")
     return index_status_map
@@ -47,28 +48,34 @@ def fetch_courses_status(preprocessed_data, indices):
     return status_map
 
 # Send notification via Twilio once a course is available to snipe 
-def send_notification(requestedIndex):
+def send_notification(requestedIndex, course_title):
     client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
     msg = client.messages.create(
-        body = f"COURSE OPEN! INDEX: [{requestedIndex}]",
+        body = f"COURSE OPEN: COURSE TITLE: [{course_title}], INDEX: [{requestedIndex}]",
         from_ = TWILIO_PHONE_NUMBER,
         to = PERSONAL_PHONE_NUMBER
     )
     logging.info(f"Course is open! Notification sent successfully: SID {msg.sid}")
 
 # Course sniping LOOP
+snipe = 0
 def course_sniper(year, term, indices):
+    global snipe
     logging.info("Starting course sniper...")
     preprocessed_data = preprocess_course_data(year, term)
 
     while indices:
         statuses = fetch_courses_status(preprocessed_data, indices)
         for index in list(indices):
-            if statuses.get(index) == "OPEN":
-                send_notification(index)
+            course_info = preprocessed_data.get(index)
+            if course_info and course_info.get("status") == "OPEN":
+                course_title = course_info.get("title", "Unknown Title")
+                send_notification(index, course_title)
                 indices.remove(index)
         if indices:
             logging.info(f"Waiting for indices: {indices}. Retrying in 5 seconds.")
+            snipe += 1
+            logging.info(f"SNIPE NUMBER: {snipe}")
             time.sleep(5)
 
 if __name__ == '__main__':
