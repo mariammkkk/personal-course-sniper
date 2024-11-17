@@ -21,6 +21,7 @@ PERSONAL_PHONE_NUMBER = os.getenv('PERSONAL_PHONE_NUMBER')
 
 API_BASE_URL = 'https://classes.rutgers.edu//soc/api/courses.json?'
 
+# Fetches status for all specified indices
 def fetch_courses_status(year, term, index):
     logging.info(f"Fetching course status for year: {year}, term: {term}, index: {index}")
     URL = f"{API_BASE_URL}year={year}&term={term}&campus=NB&subject=198"
