@@ -20,21 +20,29 @@ PERSONAL_PHONE_NUMBER = os.getenv('PERSONAL_PHONE_NUMBER')
 
 API_BASE_URL = 'https://classes.rutgers.edu//soc/api/courses.json?'
 
-# Fetches status for all specified indices
-def fetch_courses_status(year, term, index):
-    logging.info(f"Fetching course status for year: {year}, term: {term}, index: {index}")
+# Preprocess course data to create a hash map of index -> openStatusText.
+def preprocess_course_data(year, term):
+    logging.info(f"Preprocessing course data for year: {year}, term: {term}")
     URL = f"{API_BASE_URL}year={year}&term={term}&campus=NB&subject=198"
     response = requests.get(URL)
     response.raise_for_status()
     courses_data = response.json()
 
-    status_map = {index: None for index in indices}
+    # Create a hash map for indices
+    index_status_map = {}
     for course in courses_data:
         for section in course.get("sections", []):
             idx = section.get("index")
-            if idx in status_map:
-                status_map[idx] = section.get("openStatusText")
-    
+            open_status = section.get("openStatusText")
+            index_status_map[idx] = open_status
+
+    logging.info(f"Course data preprocessed. Total indices: {len(index_status_map)}")
+    return index_status_map
+
+# Fetches status for all specified indices used the prepocessed hashmap
+def fetch_courses_status(preprocessed_data, indices):
+    logging.info("Fetching statuses from preprocessed data...")
+    status_map = {index: preprocessed_data.get(index, None) for index in indices}
     logging.info(f"Statuses fetched: {status_map}")
     return status_map
 
@@ -51,10 +59,12 @@ def send_notification(requestedIndex):
 # Course sniping LOOP
 def course_sniper(year, term, indices):
     logging.info("Starting course sniper...")
+    preprocessed_data = preprocess_course_data(year, term)
+
     while indices:
-        statuses = fetch_courses_status(year, term, indices)
-        for index, status in statuses.items():
-            if status == "OPEN":
+        statuses = fetch_courses_status(preprocessed_data, indices)
+        for index in list(indices):
+            if statuses.get(index) == "OPEN":
                 send_notification(index)
                 indices.remove(index)
         if indices:
