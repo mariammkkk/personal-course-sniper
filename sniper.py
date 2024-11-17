@@ -13,7 +13,6 @@ TWILIO_PHONE_NUMBER = os.getenv('TWILIO_PHONE_NUMBER')
 PERSONAL_PHONE_NUMBER = os.getenv('PERSONAL_PHONE_NUMBER')
 
 # Define & fetch course data from Rutgers SOC API
-
 # Rutgers terms: 9 - fall, 1 - spring,  7 - summer, 0 - winter
 # Can filter link by adding '&subject=198&level=UG'
 # 'subject' specifies which classes, 198 is all computer science courses
