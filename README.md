@@ -35,3 +35,6 @@ A Python-based script that automates the process of monitoring course availabili
   - `TWILIO_PHONE_NUMBER`: The Twilio phone number to send notifications from
   - `PERSONAL_PHONE_NUMBER`: Your personal phone number to receive notifications for when a section is open
 
+## Running the Script
+`python3 sniper.py`
+
