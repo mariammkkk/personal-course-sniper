@@ -1,6 +1,10 @@
-# VERSION 1: Personal Course Sniper
+# Personal Course Sniper
 
 A Python-based script that automates the process of monitoring course availability. It uses an API to check the status of course indices and notifies the user via SMS when a desired course becomes available.
+
+## Ways to optimize
+Direct user to the registration page with inputted index and automatically submit and register the user for that specific course.
+Will hopefully implement this soon.
 
 ---
 
